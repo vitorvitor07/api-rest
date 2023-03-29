@@ -1,4 +1,5 @@
-require('dotenv').config()
+/* eslint-disable quote-props */
+require('dotenv').config();
 
 module.exports = {
   dialect: 'mariadb',
@@ -12,10 +13,10 @@ module.exports = {
     underscored: true,
     underscoredAll: true,
     'createdAt': 'created_at',
-    'updatedAt': 'updated_at'
+    'updatedAt': 'updated_at',
   },
   dialectOptions: {
-    timezone: "America/Sao_Paulo"
+    timezone: 'America/Sao_Paulo',
   },
-  timezone: "America/Sao_Paulo"
-}
+  timezone: 'America/Sao_Paulo',
+};

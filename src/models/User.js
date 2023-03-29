@@ -1,4 +1,4 @@
-import Sequelize, { Model } from "sequelize";
+import Sequelize, { Model } from 'sequelize';
 import bcryptjs from 'bcryptjs';
 
 export default class User extends Model {
@@ -11,24 +11,24 @@ export default class User extends Model {
           len: {
             args: [3, 255],
             msg: 'O nome deve conter entre 3 e 255 caracteres'
-          }
-        }
+          },
+        },
       },
       email: {
         type: Sequelize.STRING,
         defaultValue: '',
         unique: {
-          msg: 'E-mail já existente'
+          msg: 'E-mail já existente',
         },
         validate: {
           isEmail: {
-            msg: 'E-mail inválido'
-          }
-        }
+            msg: 'E-mail inválido',
+          },
+        },
       },
       password_hash: {
         type: Sequelize.STRING,
-        defaultValue: ''
+        defaultValue: '',
       },
       password: {
         type: Sequelize.VIRTUAL,
@@ -37,7 +37,7 @@ export default class User extends Model {
           len: {
             args: [6, 50],
             msg: 'A senha deve conter entre 6 e 50 caracteres'
-          }
+          },
         }
       },
     }, {

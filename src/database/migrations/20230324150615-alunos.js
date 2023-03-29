@@ -40,5 +40,5 @@ module.exports = {
     },
   }),
 
-  down: async (queryInterface) => await queryInterface.dropTable('alunos'),
+  down: async (queryInterface) => queryInterface.dropTable('alunos'),
 };
