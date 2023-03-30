@@ -5,8 +5,8 @@ import loginRequired from '../middlewares/loginRequired';
 const router = new Router();
 
 // Não reais
-router.get('/', userController.index);
-router.get('/:id', userController.show);
+// router.get('/', userController.index);
+// router.get('/:id', userController.show);
 
 // Reais
 router.post('/', userController.store);

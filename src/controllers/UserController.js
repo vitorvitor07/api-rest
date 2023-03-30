@@ -5,10 +5,10 @@ class UserController {
     try {
       const novoUser = await User.create(req.body);
       const { id, nome, email } = novoUser;
-      res.status(201).json({ msg: 'Usuário criado', usuario: { id, nome, email } });
+      return res.status(201).json({ msg: 'Usuário criado', usuario: { id, nome, email } });
     } catch (e) {
-      res.status(400).json({
-        errors: e.errors.map((erro) => erro.message),
+      return res.status(400).json({
+        errors: ['Erro'], // e.errors.map((erro) => erro.message),
       });
     }
   }

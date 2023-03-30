@@ -32,7 +32,7 @@ class TokenController {
         expiresIn: process.env.TOKEN_EXPIRATION,
       });
 
-      res.status(200).json({ token });
+      return res.status(200).json({ token });
     } catch (e) {
       return res.status(401).json({
         errors: ['Credenciais inválidas'],
