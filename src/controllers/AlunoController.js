@@ -45,11 +45,45 @@ class AlunoController {
   }
 
   async update(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ errors: ['Id não encontrado'] });
+      }
 
+      const aluno = await Aluno.findByPk(id);
+
+      if (!aluno) {
+        return res.status(400).json({ errors: ['Aluno não encontrado'] });
+      }
+
+      const alunoAtualizado = await aluno.update(req.body);
+
+      return res.status(200).json({ alunoAtualizado });
+    } catch (e) {
+      return res.status(400).json({ errors: e.errors.map((err) => err.message) });
+    }
   }
 
   async delete(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ errors: ['Id não encontrado'] });
+      }
 
+      const aluno = await Aluno.findByPk(id);
+
+      if (!aluno) {
+        return res.status(400).json({ errors: ['Aluno não encontrado'] });
+      }
+
+      await aluno.destroy();
+
+      return res.status(200).json({ msg: 'Aluno deletado' });
+    } catch (e) {
+      return res.status(400).json({ errors: e.errors.map((err) => err.message) });
+    }
   }
 }
 
