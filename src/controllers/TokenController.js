@@ -1,41 +1,46 @@
-import User from '../models/User';
-// eslint-disable-next-line import/order
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
+import bcryptjs from "bcryptjs";
+// import User from "../models/User";
+import prisma from "../database/client";
 
 class TokenController {
   async store(req, res) {
     try {
-      const { email = '', password = '' } = req.body;
+      const { email = "", senha = "" } = req.body;
 
-      if (!email || !password) {
-        res.status(401).json({
-          errors: ['Credencias inválidas'],
+      if (!email || !senha) {
+        return res.status(401).json({
+          errors: ["Credencias inválidas"],
         });
       }
 
-      const user = await User.findOne({ where: { email } });
+      const user = await prisma.user.findUnique({ where: { email } });
 
       if (!user) {
-        res.status(401).json({
-          errors: ['Usuário inexistente'],
+        return res.status(401).json({
+          errors: ["Credencias inválidas"],
         });
       }
 
-      if (!(await user.passwordIsValid(password))) {
-        res.status(401).json({
-          errors: ['Credencias inválidas'],
+      const { id, senha: userPassword } = user;
+
+      const senhaValida = await bcryptjs.compare(senha, userPassword);
+
+      if (!senhaValida) {
+        return res.status(401).json({
+          errors: ["Credencias inválidas"],
         });
       }
 
-      const { id } = user;
       const token = jwt.sign({ id, email }, process.env.TOKEN_SECRET, {
         expiresIn: process.env.TOKEN_EXPIRATION,
       });
 
       return res.status(200).json({ token });
     } catch (e) {
+      console.error(e);
       return res.status(401).json({
-        errors: ['Credenciais inválidas'],
+        errors: ["Credenciais inválidas"],
       });
     }
   }

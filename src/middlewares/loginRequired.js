@@ -1,29 +1,27 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import jwt from "jsonwebtoken";
+import prisma from "../database/client";
 
-// eslint-disable-next-line consistent-return
 export default async (req, res, next) => {
-  const { autorization } = req.headers;
+  const { authorization } = req.headers;
 
-  if (!autorization) {
-    res.status(401).json({
-      errors: ['Token requerido'],
+  if (!authorization) {
+    return res.status(401).json({
+      errors: ["Token requerido"],
     });
   }
 
-  // eslint-disable-next-line no-unused-vars
-  const [texto, token] = autorization.split(' ');
+  const [, token] = authorization.split(" ");
 
-  console.log(token);
   try {
     const dados = jwt.verify(token, process.env.TOKEN_SECRET);
+
     const { id, email } = dados;
 
-    const user = await User.findOne({ where: { id, email } });
+    const user = await prisma.user.findUnique({ where: { id } });
 
     if (!user) {
-      res.status(401).json({
-        errors: ['Usuário inválido'],
+      return res.status(401).json({
+        errors: ["Usuário inválido"],
       });
     }
 
@@ -32,10 +30,9 @@ export default async (req, res, next) => {
 
     return next();
   } catch (e) {
-    res.status(401).json({
-      errors: ['Token inválido'],
+    console.log();
+    return res.status(401).json({
+      errors: ["Token inválido"],
     });
   }
-
-  next();
 };

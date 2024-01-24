@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  nome String @default("")
+  email String @unique
+  senha String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user")
+}
+
+model Aluno {
+  id Int @id @default(autoincrement())
+  nome String
+  sobrenome String
+  email String @unique
+  peso Float
+  dataNascimento DateTime
+  altura Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fotos Foto[]
+  @@map("aluno")
+}
+
+model Foto {
+  id Int @id @default(autoincrement())
+  originalname String
+  filename String
+  alunoId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  aluno Aluno @relation(fields: [alunoId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  @@map("fotos")
+}

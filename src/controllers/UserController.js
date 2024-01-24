@@ -1,61 +1,98 @@
-import User from '../models/User';
+import bcryptjs from "bcryptjs";
+import prisma from "../database/client";
 
 class UserController {
   async store(req, res) {
     try {
-      const novoUser = await User.create(req.body);
-      const { id, nome, email } = novoUser;
-      return res.status(201).json({ msg: 'Usuário criado', usuario: { id, nome, email } });
+      const { email, nome, senha } = req.body;
+
+      if (!email || !nome || !senha) {
+        const invalidFilds = [];
+        if (!email) invalidFilds.push("email");
+        if (!nome) invalidFilds.push("nome");
+        if (!senha) invalidFilds.push("senha");
+
+        return res.status(400).json({
+          error: [`Campos invalidos: ${invalidFilds.join(", ")}`],
+        });
+      }
+
+      if (senha.length > 24 || senha.length < 6) {
+        return res
+          .status(400)
+          .json({ error: ["A senha deve conter entre 6 e 24 caracteres"] });
+      }
+
+      const userExiste = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (userExiste) {
+        return res.status(400).json({ error: ["Usuário já existe"] });
+      }
+
+      const senhaHash = await bcryptjs.hash(senha, 8);
+
+      const novoUser = await prisma.user.create({
+        data: { email, nome, senha: senhaHash },
+      });
+
+      return res.status(201).json({
+        msg: "Usuário criado",
+        usuario: { email: novoUser.email, nome: novoUser.nome },
+      });
     } catch (e) {
       return res.status(400).json({
-        errors: ['Erro'], // e.errors.map((erro) => erro.message),
+        errors: [e], // e.errors.map((erro) => erro.message),
       });
     }
   }
 
   async index(req, res) {
     try {
-      const users = await User.findAll({ attributes: ['id', 'nome', 'email'] });
+      const users = await prisma.user.findMany({
+        select: { email: true, nome: true },
+      });
 
       return res.status(200).json(users);
     } catch (e) {
-      return res.status(400).json(null);
+      return res.status(500).json(null);
     }
   }
 
-  async show(req, res) {
-    try {
-      const user = await User.findByPk(req.params.id); // Primary Key
+  // async show(req, res) {
+  //   try {
+  //     const user = await User.findByPk(req.params.id); // Primary Key
 
-      return res.status(200).json(user);
-    } catch (e) {
-      return res.status(400).json({
-        errors: e.errors.map((erro) => erro.message),
-      });
-    }
-  }
+  //     return res.status(200).json(user);
+  //   } catch (e) {
+  //     return res.status(400).json({
+  //       errors: e.errors.map((erro) => erro.message),
+  //     });
+  //   }
+  // }
 
   async update(req, res) {
     try {
-      if (!req.userId) {
-        return res.status(400).json({
-          errors: ['Id não encontrado'],
-        });
-      }
-      const user = await User.findByPk(req.userId); // Primary Key
+      const user = await prisma.user.findUnique({ where: { id: req.userId } });
+      const { id } = user;
+      const { nome, email } = req.body;
+      const data = {};
 
-      if (!user) {
-        return res.status(400).json({
-          errors: ['Usuário inexistente'],
-        });
-      }
-      const dadosAtualizados = await user.update(req.body);
-      const { id, nome, email } = dadosAtualizados;
+      Object.keys({ id, nome, email }).forEach((key) => {
+        if (req.body[key]) data[key] = req.body[key];
+      });
 
-      return res.status(200).json({ msg: 'usuário atualizado', usuario: { id, nome, email } });
+      const dadosAtualizados = await prisma.user.update({
+        where: { id },
+        data,
+        select: { nome: true, email: true, updatedAt: true },
+      });
+
+      return res.status(200).json(dadosAtualizados);
     } catch (e) {
-      return res.status(400).json({
-        errors: e.errors.map((erro) => erro.message),
+      return res.status(500).json({
+        errors: ["Erro interno do servidor"],
       });
     }
   }
@@ -64,27 +101,25 @@ class UserController {
     try {
       if (!req.userId) {
         return res.status(400).json({
-          msg: 'Id não encontrado',
-          errors: ['Missing ID.'],
+          msg: "Id não encontrado",
+          errors: ["Missing ID."],
         });
       }
-      const user = await User.findByPk(req.userId); // Primary Key
+      const userDeletado = await prisma.user.delete({
+        where: { id: req.userId },
+      }); // Primary Key
 
-      if (!user) {
+      if (!userDeletado) {
         return res.status(400).json({
-          msg: 'Usuário inexistente',
-          errors: ['Missing user.'],
+          errors: ["Usuário inexistente"],
         });
       }
-      const userDeletado = await user.destroy();
 
-      return res.status(200).json({
-        msg: 'Usuário deletado',
-        usuario: userDeletado,
-      });
+      return res.status(200).json({ userDeletado });
     } catch (e) {
-      return res.status(400).json({
-        errors: e.errors.map((erro) => erro.message),
+      console.error(e);
+      return res.status(500).json({
+        errors: "Erro interno do servidor",
       });
     }
   }
